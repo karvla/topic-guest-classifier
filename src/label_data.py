@@ -21,8 +21,9 @@ def label_set():
     for title, description in zip(all_episodes[0::2], all_episodes[1::2]):
         ep = Episode(title, description)
         episodes_tokenized = ep.tokenize()
-        with open("./all_episodes.txt", "w") as f:
-            f.writelines(all_episodes[2:])
+        #TODO: Remove already labeled data
+        #with open("./all_episodes.txt", "w") as f:
+        #    f.writelines(all_episodes[3:])
 
         for ep_tokenized in episodes_tokenized:
             print(ep_tokenized)
