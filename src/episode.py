@@ -1,3 +1,8 @@
+import spacy
+import regex as re
+
+nlp = spacy.load("en_core_web_sm")
+
 class Episode():
 
     def __init__(self, title, description):
@@ -18,6 +23,37 @@ class Episode():
                 window.extend(words[i-win_size:i])
                 window.extend(words[i:i+win_size+1])
         return window
+
+    def tokenize(self):
+        """ 
+        Returns a list of tokenized titles and descriptions, where the names are
+        replaced with NAME and on the format:
+        Title
+        Description.
+        """
+        text = self.title + "\n" + self.description
+        tokens = nlp(text)
+        
+        # Multiple names in a row is one name.
+        names = []
+        name = []
+        for token in tokens:
+            if token.ent_type_ == 'PERSON' and token.text != "'s" and token.text != "'":
+                name.append(token.text)
+            elif name != []:
+                complete_name = " ".join(name)
+                if complete_name not in names:
+                    names.append(complete_name)
+                name = []
+        if name != []:
+            names.append(" ".join(name))
+
+        texts = []
+        for name in names:
+            tok_text = re.sub(name, 'NAME', text)
+            texts.append(tok_text)
+
+        return texts
 
 
         

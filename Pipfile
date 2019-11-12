@@ -15,6 +15,7 @@ pyicu = "*"
 pycld2 = "*"
 langdetect = "*"
 cachetools = "*"
+spacy = "*"
 
 [requires]
 python_version = "3.6"
