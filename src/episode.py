@@ -51,7 +51,8 @@ class Episode():
         texts = []
         for name in names:
             tok_text = re.sub(name, 'NAME', text)
-            texts.append(tok_text)
+            if tok_text != text:
+                texts.append(tok_text)
 
         return texts
 
