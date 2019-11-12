@@ -2,7 +2,7 @@ import spacy
 import regex as re
 
 nlp = spacy.load("en_core_web_sm")
-
+#TODO: Obscure NAME on multple locations
 class Episode():
 
     def __init__(self, title, description):
@@ -31,7 +31,7 @@ class Episode():
         Title
         Description.
         """
-        text = self.title + "\n" + self.description
+        text = (self.title + "\n" + self.description).lower()
         tokens = nlp(text)
         
         # Multiple names in a row is one name.
@@ -50,7 +50,10 @@ class Episode():
 
         texts = []
         for name in names:
-            tok_text = re.sub(name, 'NAME', text)
+            try:
+                tok_text = re.sub(name, 'NAME', text)
+            except:
+                continue
             if tok_text != text:
                 texts.append(tok_text)
 
