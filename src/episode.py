@@ -11,7 +11,6 @@ class Episode():
     def window(self, win_size=3):
         padding = ['NIL' for n in range(win_size)]
         words = padding + self.description.split() + padding
-        print(words)
         window = None
         for i, word in enumerate(words):
             if word == 'NAME':
