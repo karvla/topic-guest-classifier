@@ -40,12 +40,12 @@ class Episode():
         for token in tokens:
             if token.ent_type_ == 'PERSON' and token.text != "'s" and token.text != "'":
                 name.append(token.text)
-            elif name != []:
+            elif len(name > 1):
                 complete_name = " ".join(name)
                 if complete_name not in names:
                     names.append(complete_name)
                 name = []
-        if name != []:
+        if len(name) > 1:
             names.append(" ".join(name))
 
         texts = []
