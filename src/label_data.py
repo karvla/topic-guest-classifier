@@ -32,15 +32,11 @@ def label_set():
                 if i == "t":
                     f.write(ep_tokenized)
                     f.write("\n")
-                    f.write("T")
-                    f.write("\n")
-                    f.write("\n")
+                    f.write("T\n\n")
                 elif i == "g":
                     f.write(ep_tokenized)
                     f.write("\n")
-                    f.write("G")
-                    f.write("\n")
-                    f.write("\n")
+                    f.write("G\n\n")
             print()
 
 label_set()
