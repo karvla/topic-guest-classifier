@@ -1,3 +1,5 @@
 __pycache__
 all_episodes.txt
 *.swp
+data/*
+papers
