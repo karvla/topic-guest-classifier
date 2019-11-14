@@ -7,7 +7,6 @@ Parses episodes.csv.
 """
 
 
-
 def _sentences(string):
     string = re.sub("<a href=", "", string)
     string = re.sub("<.*?>", "", string)
@@ -25,7 +24,8 @@ def _is_english(string):
         return False
     return lang[0].lang == "en" and lang[0].prob > 0.95
 
-with open('../data/episodes.csv') as f:
+
+with open("../data/episodes.csv") as f:
     episodes = csv.DictReader(f)
     for row in episodes:
         title = row["title"]
@@ -36,9 +36,4 @@ with open('../data/episodes.csv') as f:
         if title and description and _is_english(description):
             print(title)
             print(description)
-            print("_")
             print()
-
-
-
-
