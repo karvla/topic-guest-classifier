@@ -26,12 +26,28 @@ class Episode():
 
     def tokenize(self):
         """ 
-        Returns a list of tokenized titles and descriptions, where the names are
-        replaced with NAME and on the format:
-        Title
-        Description.
+        Returns a list of tokenized titles and descriptions, names names and pos,
+        where the names are replaced with "NAME":
         """
-        text = (self.title + "\n" + self.description).lower()
+        texts = []
+        text = self.title + " " +  self.description
+        names = self.persons()
+
+        for name in names:
+            try:
+                tok_text = re.sub(name, 'NAME', text)
+            except:
+                continue
+            if tok_text != text:
+                texts.append((tok_text, name))
+
+        return texts
+
+    def persons(self):
+        """
+        Returns a list of persons featured in the episode.
+        """
+        text = (self.title + "\n" + self.description)
         tokens = nlp(text)
         
         # Multiple names in a row is one name.
@@ -45,19 +61,12 @@ class Episode():
                 if complete_name not in names:
                     names.append(complete_name)
                 name = []
-        if len(name) > 1:
+        complete_name = " ".join(name)
+        if len(name) > 1 and complete_name not in names :
             names.append(" ".join(name))
 
-        texts = []
-        for name in names:
-            try:
-                tok_text = re.sub(name, 'NAME', text)
-            except:
-                continue
-            if tok_text != text:
-                texts.append(tok_text)
+        return names
 
-        return texts
 
 
         

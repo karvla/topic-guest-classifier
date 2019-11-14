@@ -11,6 +11,7 @@ regex = "*"
 polygot = "*"
 langdetect = "*"
 spacy = "*"
+termcolor = "*"
 
 [requires]
 python_version = "3.6"
