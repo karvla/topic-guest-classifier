@@ -30,7 +30,7 @@ class Episode():
         where the names are replaced with "NAME":
         """
         texts = []
-        text = self.title + " " +  self.description
+        text = self.title + "\n" +  self.description
         names = self.persons()
 
         for name in names:
