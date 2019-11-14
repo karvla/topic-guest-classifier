@@ -1,0 +1,2 @@
+# topic-guest-classifier
+This is a project in the course Project in Computer Science (EDAN70), given at LTH 2019. A podcast user may want to subscribe to a specific person instead of subscribing to a podcast. However, the user might not be interested in hearing other people talking about the person. A conventional search engine will not be able to distinguish if a person in the title and/or the description of a podcast episode is a topic or a guest. This project is about trying to separate guests from topics using machine learning.
