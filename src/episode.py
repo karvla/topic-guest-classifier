@@ -1,13 +1,18 @@
 import spacy
+
 import regex as re
 
 nlp = spacy.load("en_core_web_sm")
 #TODO: Obscure NAME on multple locations
 class Episode():
 
-    def __init__(self, title, description):
+    def __init__(self, title, description, guest=False):
         self.title = title
         self.description = description
+        self.guest = guest
+
+    def _text(self):
+        return self.title + " " + self.description
 
     def print(self):
         print(self.title)
@@ -66,6 +71,36 @@ class Episode():
             names.append(" ".join(name))
 
         return names
+
+def get_labeled(data_set):
+    episodes = []
+    lines = data_set.splitlines()
+
+    for title, description, label in zip(lines[0::4], lines[1::4], lines[2::4]):
+        if label == "T":
+            ep = Episode(title, description, 0)
+            episodes.append(ep)
+        elif label == "G":
+            ep = Episode(title, description, 1)
+            episodes.append(ep)
+            
+    print("Number of labeled samples: ", end="")
+    print(len(episodes), end="")
+    print("/", end="")
+    print(str(len(lines)/4))
+
+
+    return episodes
+
+def get_unlabeled(data_set):
+    episodes = []
+    lines = data_set.splitlines()
+
+    for title, description, label in zip(lines[0::3], lines[1::3]):
+        ep = Episode(title, description)
+        episodes.append(ep)
+
+    return episodes
 
 
 

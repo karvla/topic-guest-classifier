@@ -12,6 +12,11 @@ polygot = "*"
 langdetect = "*"
 spacy = "*"
 termcolor = "*"
+sqarqlwrapper = "*"
+pywikibot = "*"
+beautifulsoup4 = "*"
+pygtrie = "*"
+sklearn = "*"
 
 [requires]
 python_version = "3.6"
