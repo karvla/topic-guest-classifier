@@ -17,6 +17,7 @@ pywikibot = "*"
 beautifulsoup4 = "*"
 pygtrie = "*"
 sklearn = "*"
+cpickle = "*"
 
 [requires]
 python_version = "3.6"

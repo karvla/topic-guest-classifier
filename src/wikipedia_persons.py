@@ -1,13 +1,11 @@
 from bs4 import BeautifulSoup
 import requests
-import pickle
 import sys
-import trie
 
 """
 Parses human names on wikidata and store them in a trie.
 """
-sys.setrecursionlimit(50000)
+sys.setrecursionlimit(500000)
 
 
 def get_names():
@@ -39,23 +37,20 @@ def get_names():
                     name = item_label.contents[0]
                 except:
                     continue
-                trie.add(names, name)
+                print(name)
 
         url_item = soup.find(text="next 5,000").parent
         if not url_item:
             break
         url = url_base + url_item["href"]
-        print(n_names)
         n_names += 5000
         
         if n_names % 1000000  == 0:
-            with open("./names_on_wikipedia.pickle", "wb") as f:
+            with open("./names_on_wikipedia_" + str(n_names/1000000) + ".pickle", "wb") as f:
                 pickle.dump(names, f)
+            names = trie.TrieNode('*')
+
     return names
 
 
-name_list = get_names()
-with open("./names_on_wikipedia.pickle", "wb") as f:
-    pickle.dump(name_list, f)
-
-print("Done!")
+get_names()

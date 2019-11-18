@@ -4,16 +4,7 @@ import trie
 import sys
 from episode import Episode
 
-with open("./data/names_on_wikipedia.pickle", "rb") as f:
-    wiki_names = pickle.load(f)
-
-nlp = spacy.load("en_core_web_sm")
-file_name = sys.argv[1]
-
-with open(file_name) as f:
-    all_episodes = f.read().splitlines()
-
-def label_set():
+def label_set(wiki_names):
     """
     Lables the the set.
     """
@@ -32,4 +23,20 @@ def label_set():
                 print("G")
                 print()
 
-label_set()
+def names_trie(names):
+    name_tree = trie.TrieNode('*')
+    [trie.add(name_tree, name) for name in names]
+    return name_tree
+
+if __name__ == "__main__":
+    with open("./data/names_on_wikipedia.txt") as f:
+        wiki_names = f.readlines()
+
+    nlp = spacy.load("en_core_web_sm")
+    file_name = sys.argv[1]
+
+    with open(file_name) as f:
+        all_episodes = f.read().splitlines()
+
+    name_tree = names_trie(wiki_names)
+    label_set(name_tree)
