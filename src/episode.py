@@ -34,12 +34,15 @@ class Episode:
         where the names are replaced with "NAME":
         """
         texts = []
-        text = self.title + "\n" + self.description
+        text = self.title + " \n " + self.description
+        print(len(text.splitlines()))
         names = self.persons()
 
         for name in names:
             try:
                 tok_text = re.sub(name, "NAME", text)
+                print(name)
+                print(len(tok_text.splitlines()))
             except:
                 continue
             if tok_text != text:
@@ -51,7 +54,7 @@ class Episode:
         """
         Returns a list of persons featured in the episode.
         """
-        text = self.title + "\n" + self.description
+        text = self.title + " \n " + self.description
         tokens = nlp(text)
 
         # Multiple names in a row is one name.
@@ -59,7 +62,8 @@ class Episode:
         name = []
         for token in tokens:
             if token.ent_type_ == "PERSON" and token.text != "'s" and token.text != "'":
-                name.append(token.text)
+                token_text = re.sub("\n", "", token.text)
+                name.append(token_text)
             elif len(name) > 1:
                 complete_name = " ".join(name)
                 if complete_name not in names:
@@ -98,3 +102,11 @@ def get_unlabeled(data_set):
         episodes.append(ep)
 
     return episodes
+
+title = "Chapter 133: The Chase – First Day - Read by Kerry Shale - "
+desc = "Introduced by Peter Donaldson, Recorded by Kate Bland - Cast Iron Studios, Edited and Mixed at dBs Music'I have written a blasphemous book', said Melville when his novel was first published in 1851, 'and I feel as spotless as the lamb'. Deeply subversive, in almost every way imaginable, Moby-Dick is a virtual, alternative bible - and as such, ripe for reinterpretation in this new world of new media. Out of Dominion was born its bastard child - or perhaps its immaculate conception - the Moby-Dick Big Read: an online version of Melville's magisterial tome: each of its 135 chapters read out aloud, by a mixture of the celebrated and the unknown, to be broadcast online, one new chapter each day, in a sequence of 135 downloads, publicly and freely accessible.Starting 16 September 2012!For more info please go to: www.mobydickbigread.com"
+
+ep = Episode(title, desc)
+ep.tokenize()
+#print(ep.tokenize()[0])
+#print(ep.tokenize()[1])
