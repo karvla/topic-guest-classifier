@@ -1,9 +1,12 @@
+import nltk
 import spacy
+from nltk.tag.stanford import StanfordNERTagger
+
+st = StanfordNERTagger('/home/karvla/projects/topic-guest-classifier/english.all.3class.distsim.crf.ser.gz', '/home/karvla/projects/topic-guest-classifier/stanford-ner.jar')
 
 import regex as re
 
 nlp = spacy.load("en_core_web_sm")
-# TODO: Obscure NAME on multple locations
 class Episode:
     def __init__(self, title, description, guest=False):
         self.title = title
@@ -51,16 +54,15 @@ class Episode:
         """
         Returns a list of persons featured in the episode.
         """
-        text = self.title + " \n " + self.description
-        tokens = nlp(text)
-
+        text = nltk.tokenize.word_tokenize(self.title + " \n " + self.description)
         # Multiple names in a row is one name.
         names = []
         name = []
-        for token in tokens:
-            if token.ent_type_ == "PERSON" and token.text != "'s" and token.text != "'":
-                token_text = re.sub("\n", "", token.text)
-                name.append(token_text)
+        
+        for word, tag in st.tag(text):
+            if tag == "PERSON" and word != "'s" and word != "'":
+                word = re.sub("\n", "", word)
+                name.append(word)
             elif len(name) > 1:
                 complete_name = " ".join(name)
                 if complete_name not in names:
@@ -105,4 +107,3 @@ def get_unlabeled(data_set):
         episodes.append(ep)
 
     return episodes
-
