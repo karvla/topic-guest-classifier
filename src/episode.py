@@ -1,5 +1,6 @@
 import nltk
 import spacy
+import stanfordnlp
 from nltk.tag.stanford import StanfordNERTagger
 
 st = StanfordNERTagger('/home/karvla/projects/topic-guest-classifier/english.all.3class.distsim.crf.ser.gz', '/home/karvla/projects/topic-guest-classifier/stanford-ner.jar')
@@ -50,7 +51,7 @@ class Episode:
 
         return texts
 
-    def persons(self):
+    def persons_nltk(self):
         """
         Returns a list of persons featured in the episode.
         """
@@ -70,6 +71,32 @@ class Episode:
                 name = []
         complete_name = " ".join(name)
         if len(name) > 1 and complete_name not in names:
+            names.append(" ".join(name))
+
+        return names
+
+    def persons_spacy(self):
+        """
+        Returns a list of persons featured in the episode.
+        """
+        text = (self.title + "\n" + self.description)
+        tokens = nlp(text)
+
+        # Multiple names in a row is one name.
+        names = []
+        name = []
+        for token in tokens:
+            if (token.ent_type_ == 'PERSON' 
+                and not re.findall('\P{L}', token.text)
+                and not re.findall('remix', token.text.lower())):
+                name.append(token.text)
+            elif len(name) > 1:
+                complete_name = " ".join(name)
+                if complete_name not in names:
+                    names.append(complete_name)
+                name = []
+        complete_name = " ".join(name)
+        if len(name) > 1 and complete_name not in names :
             names.append(" ".join(name))
 
         return names
@@ -102,8 +129,9 @@ def get_unlabeled(data_set):
     episodes = []
     lines = data_set.splitlines()
 
-    for title, description, label in zip(lines[0::3], lines[1::3]):
+    for title, description in zip(lines[0::3], lines[1::3]):
         ep = Episode(title, description)
         episodes.append(ep)
 
     return episodes
+
