@@ -1,8 +1,12 @@
 import pickle
-import spacy
 import trie
 import sys
 from episode import Episode
+from functools import lru_cache
+
+""" 
+Tags parsed episodes with T if NAME is on wikidata, G otherwise.
+"""
 
 def label_set(wiki_names):
     """
@@ -23,16 +27,16 @@ def label_set(wiki_names):
                 print("G")
                 print()
 
+@lru_cache(maxsize=None)
 def names_trie(names):
     name_tree = trie.TrieNode('*')
     [trie.add(name_tree, name) for name in names]
     return name_tree
 
 if __name__ == "__main__":
-    with open("./data/names_on_wikipedia.txt") as f:
-        wiki_names = f.readlines()
+    with open("./data/wikidata_names.txt") as f:
+        wiki_names = tuple(f.readlines())
 
-    nlp = spacy.load("en_core_web_sm")
     file_name = sys.argv[1]
 
     with open(file_name) as f:

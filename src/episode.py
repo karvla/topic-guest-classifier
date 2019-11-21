@@ -1,6 +1,5 @@
-import nltk
 import spacy
-import stanfordnlp
+import nltk
 from nltk.tag.stanford import StanfordNERTagger
 
 st = StanfordNERTagger('/home/karvla/projects/topic-guest-classifier/english.all.3class.distsim.crf.ser.gz', '/home/karvla/projects/topic-guest-classifier/stanford-ner.jar')
@@ -13,9 +12,7 @@ class Episode:
         self.title = title
         self.description = description
         self.guest = guest
-
-    def _text(self):
-        return self.title + " " + self.description
+        self.text = title + '\n' + description
 
     def print(self):
         print(self.title)
@@ -38,66 +35,22 @@ class Episode:
         where the names are replaced with "NAME":
         """
         texts = []
-        text = self.title + " \n " + self.description
-        names = self.persons()
+        names = self.names()
 
         for name in names:
-            try:
-                tok_text = re.sub(name, "NAME", text)
-            except:
-                continue
-            if tok_text != text:
+            tok_text = re.sub(name, "NAME", self.text)
+            if tok_text != self.text:
                 texts.append((tok_text, name))
 
         return texts
 
-    def persons_nltk(self):
-        """
-        Returns a list of persons featured in the episode.
-        """
-        text = nltk.tokenize.word_tokenize(self.title + " \n " + self.description)
-        # Multiple names in a row is one name.
+    def names(self):
         names = []
-        name = []
-        
-        for word, tag in st.tag(text):
-            if tag == "PERSON" and word != "'s" and word != "'":
-                word = re.sub("\n", "", word)
-                name.append(word)
-            elif len(name) > 1:
-                complete_name = " ".join(name)
-                if complete_name not in names:
-                    names.append(complete_name)
-                name = []
-        complete_name = " ".join(name)
-        if len(name) > 1 and complete_name not in names:
-            names.append(" ".join(name))
-
-        return names
-
-    def persons_spacy(self):
-        """
-        Returns a list of persons featured in the episode.
-        """
-        text = (self.title + "\n" + self.description)
-        tokens = nlp(text)
-
-        # Multiple names in a row is one name.
-        names = []
-        name = []
-        for token in tokens:
-            if (token.ent_type_ == 'PERSON' 
-                and not re.findall('\P{L}', token.text)
-                and not re.findall('remix', token.text.lower())):
-                name.append(token.text)
-            elif len(name) > 1:
-                complete_name = " ".join(name)
-                if complete_name not in names:
-                    names.append(complete_name)
-                name = []
-        complete_name = " ".join(name)
-        if len(name) > 1 and complete_name not in names :
-            names.append(" ".join(name))
+        pattern = r"<>(.*?)<\\>"
+        for match in re.finditer(pattern, self.text):
+            name = match.group(1)
+            if name not in names:
+                names.append(name)
 
         return names
 

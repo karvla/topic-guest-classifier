@@ -40,9 +40,10 @@ def print_tagged(lines):
 lines = []
 while True:
     line = sys.stdin.readline()
+    if line == "":
+        break
     lines.append(line)
     if len(lines) == batch_size:
         print_tagged(lines)
         lines = []
 
-print("Number of skipped lines: " + str(skipped))

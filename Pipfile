@@ -18,6 +18,11 @@ beautifulsoup4 = "*"
 pygtrie = "*"
 sklearn = "*"
 cpickle = "*"
+nltk = "*"
+sner = "*"
+pip = "*"
+install = "*"
+stanfordnlp = "*"
 
 [requires]
 python_version = "3.6"
