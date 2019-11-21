@@ -7,7 +7,7 @@ import sys
 
 def validate(model, test_set, corpus):
     episodes = get_labeled(test_set)
-    corpus_test = [ep._text() for ep in episodes]
+    corpus_test = [ep.text for ep in episodes]
 
     vec = TfidfVectorizer()
     vec.fit(corpus)

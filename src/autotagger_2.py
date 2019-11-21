@@ -19,8 +19,8 @@ def label_set(all_names, dead_names, fict_names):
 
         for tokenized, name in ep_tokenized:
             in_all, _ = trie.find_prefix(all_names, name)
-            in_fict, _ = trie.find_prefix(dead_names, name)
-            in_dead, _ = trie.find_prefix(fict_names, name)
+            in_fict, _ = trie.find_prefix(fict_names, name)
+            in_dead, _ = trie.find_prefix(dead_names, name)
 
             if in_fict or in_dead:
                 print(tokenized)
