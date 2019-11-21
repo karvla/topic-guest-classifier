@@ -1,12 +1,10 @@
-import spacy
 import nltk
 from nltk.tag.stanford import StanfordNERTagger
+import regex as re
 
 st = StanfordNERTagger('/home/karvla/projects/topic-guest-classifier/english.all.3class.distsim.crf.ser.gz', '/home/karvla/projects/topic-guest-classifier/stanford-ner.jar')
 
-import regex as re
 
-nlp = spacy.load("en_core_web_sm")
 class Episode:
     def __init__(self, title, description, guest=False):
         self.title = title
@@ -38,9 +36,10 @@ class Episode:
         names = self.names()
 
         for name in names:
-            tok_text = re.sub(name, "NAME", self.text)
-            if tok_text != self.text:
-                texts.append((tok_text, name))
+            pattern = r"<>" + name + "<\\\>"
+            tok_text = re.sub(pattern, "NAME", self.text)
+            tok_text = re.sub(r"<>.*?<\\\>", "OTHERS", tok_text)
+            texts.append((tok_text, name))
 
         return texts
 
@@ -72,8 +71,6 @@ def get_labeled(data_set):
     n_ep = len(episodes)
     if not n_total == n_ep:
         print("Only got " + str(n_ep/n_total*100) + "% of labeled data")
-
-
 
     return episodes
 

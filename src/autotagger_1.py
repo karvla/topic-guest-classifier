@@ -15,7 +15,6 @@ def label_set(wiki_names):
     for title, description in zip(all_episodes[0::3], all_episodes[1::3]):
         ep = Episode(title, description)
         ep_tokenized = ep.tokenize()
-
         for tokenized, name in ep_tokenized:
             in_wiki_names, _ = trie.find_prefix(wiki_names, name)
             if in_wiki_names:
