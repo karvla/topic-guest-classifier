@@ -2,6 +2,7 @@ import regex as re
 import csv
 from langdetect import detect_langs
 import sys
+import pytest
 
 """
 Parses episodes.csv.
@@ -11,11 +12,12 @@ Parses episodes.csv.
 def _sentences(string):
     string = re.sub("<a href=", "", string)
     string = re.sub("<.*?>", "", string)
-    string = re.sub("http\S+", "", string)
-    string = re.sub("\s+", " ", string)
-    string = re.sub("\n", "", string)
-    string = re.sub("\s+", " ", string)
+    string = re.sub(r"http\S+", "", string)
+    string = re.sub(r"\s+", " ", string)
+    string = re.sub(r"\n", "", string)
+    string = re.sub(r"\s+", " ", string)
     return string
+
 
 def _is_english(string):
     try:
@@ -23,6 +25,12 @@ def _is_english(string):
     except:
         return False
     return lang[0].lang == "en" and lang[0].prob > 0.95
+
+
+def _is_music_mix(string):
+    pattern = r"Mix|Original Mix|Remix"
+    match = re.findall(pattern, string)
+    return [] != match
 
 
 if __name__ == "__main__":
@@ -36,7 +44,12 @@ if __name__ == "__main__":
                 description = _sentences(row["summary"])
             else:
                 description = _sentences(row["description"])
-            if title and description and _is_english(description):
+            if (
+                title
+                and description
+                and _is_english(description)
+                and not _is_music_mix(description)
+            ):
                 print(title)
                 print(description)
                 print()
