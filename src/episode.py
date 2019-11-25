@@ -1,9 +1,4 @@
-import nltk
-from nltk.tag.stanford import StanfordNERTagger
 import regex as re
-
-st = StanfordNERTagger('/home/karvla/projects/topic-guest-classifier/english.all.3class.distsim.crf.ser.gz', '/home/karvla/projects/topic-guest-classifier/stanford-ner.jar')
-
 
 class Episode:
     def __init__(self, title, description, guest=False):
@@ -11,21 +6,6 @@ class Episode:
         self.description = description
         self.guest = guest
         self.text = title + '\n' + description
-
-    def print(self):
-        print(self.title)
-        print(self.description)
-
-    def window(self, win_size=3):
-        padding = ["NIL" for n in range(win_size)]
-        words = padding + self.description.split() + padding
-        window = None
-        for i, word in enumerate(words):
-            if word == "NAME":
-                window = []
-                window.extend(words[i - win_size : i])
-                window.extend(words[i : i + win_size + 1])
-        return window
 
     def tokenize(self):
         """ 
@@ -36,9 +16,9 @@ class Episode:
         names = self.names()
 
         for name in names:
-            pattern = r"<>" + name + "<\\\>"
+            pattern = r"<>" + name + r"<\\>"
             tok_text = re.sub(pattern, "NAME", self.text)
-            tok_text = re.sub(r"<>.*?<\\\>", "OTHERS", tok_text)
+            tok_text = re.sub(r"<>.*?<\\>", "OTHERS", tok_text)
             texts.append((tok_text, name))
 
         return texts
