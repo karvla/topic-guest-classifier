@@ -32,12 +32,10 @@ def _is_music_mix(string):
     match = re.findall(pattern, string)
     return [] != match
 
-
-if __name__ == "__main__":
-
-    data_path = sys.argv[1]
-    with open(data_path) as f:
+def parse(data_path):
+    with open(data_path, "r") as f:
         episodes = csv.DictReader(f)
+
         for row in episodes:
             title = _sentences(row["title"])
             if row["summary"]:
@@ -53,3 +51,7 @@ if __name__ == "__main__":
                 print(title)
                 print(description)
                 print()
+
+if __name__ == "__main__":
+    data_path = sys.argv[1]
+    parse(data_path)
