@@ -1,4 +1,7 @@
 from parse_episodes import _is_music_mix
+from parse_episodes import parse
+import sys
+import io
 
 
 def test_is_music_mix():
@@ -8,4 +11,6 @@ def test_is_music_mix():
     assert _is_music_mix(string1) == False
     assert _is_music_mix(string2) == True
     assert _is_music_mix(string3) == True
+
+
 
