@@ -10,29 +10,33 @@ from keras.utils import to_categorical
 import sklearn.datasets as skds
 from episode import get_labeled
 import logging
-
+import matplotlib.pyplot as plt
 
 """
-tfidf and LSTM.
+Embedding and LSTM.
 """
 
 vocab_size = 10000
-max_length = 200
-batch_size = 20
+max_length = 100
+batch_size = 32
 num_labels = 2
-epochs = 15
+epochs = 4
 logging.basicConfig(filename="history.log", level=logging.DEBUG)
 
-
-def train(train_set):
-    episodes = get_labeled(train_set)
-    train_samples = [ep.text for ep in episodes]
-
-    X_train = [one_hot(d, vocab_size, lower=False) for d in train_samples]
-    X_train = pad_sequences(X_train, maxlen=max_length)
+def xy(labeled_set):
+    episodes = [ep for ep in get_labeled(labeled_set)]
+    samples = [ep.text for ep in episodes]
+    X = [one_hot(d, vocab_size, lower=False) for d in samples]
+    X = pad_sequences(X, maxlen=max_length)
 
     y_tags = [ep.guest for ep in episodes]
-    y_train = to_categorical(y_tags)
+    y = to_categorical(y_tags)
+    return X, y
+
+
+def train(train_set, val_set):
+    X_train, y_train = xy(train_set)
+    X_val, y_val = xy(val_set)
 
     model = Sequential()
     model.add(Embedding(vocab_size, 64, input_length=max_length))
@@ -42,34 +46,33 @@ def train(train_set):
     model.add(Dense(2, activation="sigmoid"))
     model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
 
-    logging.info(model.summary())
-    history = model.fit(
+    estimator = model.fit(
         X_train,
         y_train,
         batch_size=batch_size,
         epochs=epochs,
         verbose=1,
-        validation_split=0.2,
+        validation_data=(X_val, y_val)
     )
+    plt.plot(estimator.history['loss'])
+    plt.plot(estimator.history['val_loss'])
+    plt.title('Model training')
+    plt.ylabel('training error')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'validation'], loc=0)
+    plt.show()
 
     return model
 
 
 def validate(model, val_set):
-    episodes = get_labeled(val_set)
-    test_samples = [ep.text for ep in episodes]
-
-    X_test = [one_hot(d, vocab_size, lower=False) for d in test_samples]
-    X_test = pad_sequences(X_test, maxlen=max_length)
-
-    y_tags = [ep.guest for ep in episodes]
-    y_test = to_categorical(y_tags)
+    X_test, y_test = xy(val_set) 
     score = model.evaluate(X_test, y_test, batch_size=batch_size, verbose=1)
 
     print("Test score:", score[0])
     print("Test accuracy:", score[1])
-    logging.info("Test score:", score[0])
-    logging.info("Test accuracy:", score[1])
+    logging.info("Test score: " + str(score[0]))
+    logging.info("Test accuracy: " + str(score[1]))
 
 
 if __name__ == "__main__":
@@ -90,7 +93,7 @@ if __name__ == "__main__":
         with open(file_name[:-9] + "validate.txt") as f:
             test_set = f.read()
 
-        model = train(labeled_set)
+        model = train(labeled_set, test_set)
         with open("lstm_model.pickle", "wb") as f:
             pickle.dump(model, f)
 
