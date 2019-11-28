@@ -17,8 +17,8 @@ class Episode:
 
         for name in names:
             pattern = r"<>" + name + r"<\\>"
-            tok_text = re.sub(pattern, "NAME", self.text)
-            tok_text = re.sub(r"<>.*?<\\>", "OTHERS", tok_text)
+            tok_text = re.sub(pattern, "$name$", self.text)
+            tok_text = re.sub(r"<>.*?<\\>", "$others$", tok_text)
             texts.append((tok_text, name))
 
         return texts
