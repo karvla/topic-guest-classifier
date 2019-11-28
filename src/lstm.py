@@ -17,20 +17,22 @@ Embedding and LSTM.
 """
 
 vocab_size = 10000
-max_length = 100
-batch_size = 32
+max_length = 60
+batch_size = 128
 num_labels = 2
-epochs = 4
-logging.basicConfig(filename="history.log", level=logging.DEBUG)
+epochs = 15
 
-def xy(labeled_set):
+def xy(labeled_set, limit=None):
     episodes = [ep for ep in get_labeled(labeled_set)]
     samples = [ep.text for ep in episodes]
-    X = [one_hot(d, vocab_size, lower=False) for d in samples]
+    X = [one_hot(d, vocab_size, filters='!"#%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n') for d in samples]
     X = pad_sequences(X, maxlen=max_length)
 
     y_tags = [ep.guest for ep in episodes]
     y = to_categorical(y_tags)
+    if limit:
+        return X[:limit], y[:limit]
+
     return X, y
 
 

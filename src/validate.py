@@ -1,5 +1,6 @@
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import confusion_matrix
 import pickle
 from episode import get_labeled
 import sys
@@ -23,6 +24,8 @@ def validate(model, test_set, corpus):
             n_correct += 1
 
     print("Accurrycy: " + str(n_correct / n_total * 100) + "%")
+    c =confusion_matrix(y, y_predicted)
+    print(c)
 
 
 if __name__ == "__main__":

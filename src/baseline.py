@@ -24,6 +24,7 @@ def train(train_set):
         penalty="l2", dual=True, solver="liblinear"
     )
     model = classifier.fit(X, y)
+    print("Confusion matrix:")
     print(model)
     return model, corpus
 
