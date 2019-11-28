@@ -4,23 +4,26 @@ import tensorflow.keras as keras
 from keras.preprocessing.text import one_hot
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
-from keras.layers import Activation, Dense, Dropout, Embedding, LSTM
+from keras.layers import Activation, Dense, Dropout, Embedding, LSTM, Bidirectional
+from keras.callbacks import EarlyStopping
 from sklearn.preprocessing import LabelBinarizer
 from keras.utils import to_categorical
-import sklearn.datasets as skds
 from episode import get_labeled
 import logging
 import matplotlib.pyplot as plt
+from validate import log_results
+import regex as re
+import numpy as np
 
 """
 Embedding and LSTM.
 """
-
+#Hyper Parameters:
 vocab_size = 10000
 max_length = 60
 batch_size = 128
-num_labels = 2
-epochs = 15
+num_labels = 1
+epochs = 10
 
 def xy(labeled_set, limit=None):
     episodes = [ep for ep in get_labeled(labeled_set)]
@@ -33,21 +36,20 @@ def xy(labeled_set, limit=None):
     if limit:
         return X[:limit], y[:limit]
 
-    return X, y
-
+    return X, y_tags
 
 def train(train_set, val_set):
     X_train, y_train = xy(train_set)
     X_val, y_val = xy(val_set)
 
+    # Model
     model = Sequential()
     model.add(Embedding(vocab_size, 64, input_length=max_length))
+    model.add(Bidirectional(LSTM(32)))
     model.add(Dropout(0.2))
-    model.add(LSTM(100))
-    model.add(Dropout(0.2))
-    model.add(Dense(2, activation="sigmoid"))
+    model.add(Dense(1, activation="sigmoid"))
     model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
-
+    es = EarlyStopping(monitor='val_loss', mode='min', verbose=1)
     estimator = model.fit(
         X_train,
         y_train,
@@ -56,26 +58,27 @@ def train(train_set, val_set):
         verbose=1,
         validation_data=(X_val, y_val)
     )
+
     plt.plot(estimator.history['loss'])
     plt.plot(estimator.history['val_loss'])
     plt.title('Model training')
     plt.ylabel('training error')
     plt.xlabel('epoch')
     plt.legend(['train', 'validation'], loc=0)
-    plt.show()
+    plt.draw()
 
     return model
 
 
 def validate(model, val_set):
-    X_test, y_test = xy(val_set) 
-    score = model.evaluate(X_test, y_test, batch_size=batch_size, verbose=1)
+    X_test, y_true = xy(val_set) 
+    y_predicted = np.rint(model.predict(X_test))
 
-    print("Test score:", score[0])
-    print("Test accuracy:", score[1])
-    logging.info("Test score: " + str(score[0]))
-    logging.info("Test accuracy: " + str(score[1]))
-
+    with open("./src/lstm.py") as f:
+        text = f.read()
+    model_text = re.findall(r"# Model\n([\s\S]+?)\n\n", text, re.M)[0]
+    hyperparameter_text = re.findall(r"Hyper Parameters:\n([\s\S]+?)\n\n", text, re.M)[0]
+    log_results(y_predicted, y_true, model_text + "\n" + hyperparameter_text)
 
 if __name__ == "__main__":
     file_name = sys.argv[1]

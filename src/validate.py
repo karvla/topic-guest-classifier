@@ -1,12 +1,35 @@
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import confusion_matrix
+import sklearn.metrics as metrics
 import pickle
+from tabulate import tabulate
 from episode import get_labeled
 import sys
+from datetime import date
+
+def log_results(y_predicted, y_true, comment=""):
+
+    def to_percent(n):
+        return str(round(n/len(y_true)*100, 3))+"%"
 
 
-def validate(model, test_set, corpus):
+    c = metrics.confusion_matrix(y_true, y_predicted)
+    c = [["", "actual T", "actual G"],
+        ["predicted T", to_percent(c[0][0]), to_percent(c[0][1])],
+        ["predicted G", to_percent(c[1][0]), to_percent(c[1][1])]]
+
+    results = ""
+    results += str(date.today()) + ":\n"
+    results += comment + "\n\n"
+    results += metrics.classification_report(y_true, y_predicted) +"\n"
+    results += "Confusion Matrix n=" + str(len(y_true)) + ":\n"
+    results += tabulate(c) + "\n"
+
+    print(results)
+    with open("./log.txt", "a+") as f:
+        f.write(results)
+        
+def validate(model, test_set, corpus, comment="Baseline"):
     episodes = get_labeled(test_set)
     corpus_test = [ep.text for ep in episodes]
 
@@ -14,19 +37,10 @@ def validate(model, test_set, corpus):
     vec.fit(corpus)
 
     X = vec.transform(corpus_test)
-    y = [ep.guest for ep in episodes]
+    y_true = [ep.guest for ep in episodes]
     y_predicted = model.predict(X)
 
-    n_total = len(y)
-    n_correct = 0
-    for i, j in zip(y, y_predicted):
-        if i == j:
-            n_correct += 1
-
-    print("Accurrycy: " + str(n_correct / n_total * 100) + "%")
-    c =confusion_matrix(y, y_predicted)
-    print(c)
-
+    log_results(y_predicted, y_true, comment)
 
 if __name__ == "__main__":
 
@@ -39,4 +53,4 @@ if __name__ == "__main__":
     with open(test_set_path, "r") as f:
         test_set = f.read()
 
-    validate(model, test_set, corpus)
+    validate(model, test_set, tuple(corpus))

@@ -6,6 +6,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import pickle
 from episode import get_labeled
 import sys 
+import validate
 
 """
 tf-idf and logistic regression.
@@ -36,6 +37,7 @@ if __name__ == "__main__":
         labeled_set = f.read()
 
     model, corpus = train(labeled_set)
+
     with open("baseline_model.pickle", "wb") as f:
         pickle.dump((model, corpus), f)
 
