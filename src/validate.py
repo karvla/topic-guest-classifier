@@ -14,9 +14,10 @@ def log_results(y_predicted, y_true, comment=""):
 
 
     c = metrics.confusion_matrix(y_true, y_predicted)
-    c = [["", "actual T", "actual G"],
-        ["predicted T", to_percent(c[0][0]), to_percent(c[0][1])],
-        ["predicted G", to_percent(c[1][0]), to_percent(c[1][1])]]
+    c = [["", "actual T", "actual G", ""],
+        ["predicted T", c[0][0], c[0][1], c[0][0]+ c[0][1]],
+        ["predicted G", c[1][0], c[1][1],c[1][0]+ c[1][1]],
+        ["", c[1][0] + c[0][0], c[1][1] + c[0][1], ""]]
 
     results = ""
     results += str(date.today()) + ":\n"
@@ -30,7 +31,7 @@ def log_results(y_predicted, y_true, comment=""):
         f.write(results)
         
 def validate(model, test_set, corpus, comment="Baseline"):
-    episodes = get_labeled(test_set)
+    episodes = get_labeled(test_set, True)
     corpus_test = [ep.text for ep in episodes]
 
     vec = TfidfVectorizer()

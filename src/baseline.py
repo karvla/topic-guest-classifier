@@ -13,7 +13,7 @@ tf-idf and logistic regression.
 """
 
 def train(train_set):
-    episodes = get_labeled(train_set)
+    episodes = get_labeled(train_set, True)
     corpus = [ep.text for ep in episodes]
     vec = TfidfVectorizer()
     
