@@ -3,7 +3,6 @@ import sys
 import tensorflow.keras as keras
 from keras.preprocessing.text import one_hot, Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-
 from keras.models import Sequential
 from keras.layers import Activation, Dense, Dropout, Embedding, LSTM, Bidirectional
 from keras.callbacks import EarlyStopping
@@ -66,7 +65,7 @@ def make_embedding_layer(all_texts):
         embedding_dim,
         embeddings_initializer=Constant(embedding_matrix),
         input_length=max_length,
-        trainable=True,
+        trainable=False,
     )
     return embedding_layer, tokenizer
 
@@ -74,20 +73,9 @@ def make_embedding_layer(all_texts):
 def xy(labeled_set, limit=None):
     episodes = [ep for ep in get_labeled(labeled_set, True)]
     samples = [ep.text for ep in episodes]
-    # X = [one_hot(d, vocab_size, filters='!"#%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n') for d in samples]
-    # X = pad_sequences(X, maxlen=max_length)
-    # tokenizer = Tokenizer(num_words=vocab_size)
-    # tokenizer.fit_on_texts(samples)
-    # sequences = tokenizer.texts_to_sequences(samples)
-    # word_index = tokenizer.word_index
-    # data = pad_sequences(sequences, maxlen=max_length)
     X_texts = samples
 
     y_tags = [ep.guest for ep in episodes]
-    # y = to_categorical(y_tags)
-    # if limit:
-    #    return X[:limit], y[:limit]
-
     return X_texts, y_tags
 
 
@@ -100,9 +88,9 @@ def train(train_set, val_set):
     all_texts.extend(X_val)
     embedding_layer, tokenizer = make_embedding_layer(all_texts)
 
-    X_val = tokenizer.texts_to_sequences(X_val)
     X_train = tokenizer.texts_to_sequences(X_train)
     X_train = pad_sequences(X_train, maxlen=max_length)
+    X_val = tokenizer.texts_to_sequences(X_val)
     X_val = pad_sequences(X_val, maxlen=max_length)
 
     # Model
@@ -125,8 +113,8 @@ def train(train_set, val_set):
         batch_size=batch_size,
         epochs=epochs,
         verbose=1,
-        validation_data=(X_val, y_val)#,
-     #   callbacks=[es],
+        validation_data=(X_val, y_val),
+        callbacks=[es],
     )
 
     plt.plot(estimator.history["accuracy"])

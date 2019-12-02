@@ -20,8 +20,8 @@ class Episode:
 
         for name in names:
             pattern = r"<>" + name + r"<\\>"
-            tok_text = re.sub(pattern, "$name$", self.text)
-            tok_text = re.sub(r"<>.*?<\\>", "$others$", tok_text)
+            tok_text = re.sub(pattern, "FOCUSNAMEFOCUS", self.text)
+            tok_text = re.sub(r"<>.*?<\\>", "NOTFOCUSNOT", tok_text)
             texts.append((tok_text, name))
 
         return texts

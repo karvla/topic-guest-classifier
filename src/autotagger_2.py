@@ -16,7 +16,6 @@ def label_set(all_names, dead_names, fict_names):
     for title, description in zip(all_episodes[0::3], all_episodes[1::3]):
         ep = Episode(title, description)
         ep_tokenized = ep.tokenize()
-
         for tokenized, name in ep_tokenized:
             in_all, _ = trie.find_prefix(all_names, name)
             in_fict, _ = trie.find_prefix(fict_names, name)
