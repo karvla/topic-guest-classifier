@@ -14,7 +14,11 @@ def tag_names(text):
     nltk.word_tokenize
     name_parts = []
     names = False
-    for token, tag in st.tag(text_tokenized):
+    try:
+        token_tags = st.tag(text_tokenized)
+    except:
+        return 
+    for token, tag in token_tags:
         if tag == "PERSON" and not re.findall("\P{L}", token):
             name_parts.append(token)
         elif not tag == "PERSON" and len(name_parts) > 1:
