@@ -26,6 +26,12 @@ tensorflow = "*"
 pytest = "*"
 keras = "*"
 tabulate = "*"
+pypodcastparser = "*"
+polyglot = "*"
+icu = "*"
+python-icu = "*"
+pyicu = "*"
+pycld2 = "*"
 
 [requires]
 python_version = "3.6"
