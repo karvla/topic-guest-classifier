@@ -6,8 +6,12 @@ class Episode:
         self.title = title
         self.description = description
         self.guest = guest
+        if re.findall('FOCUSNAMEFOCUS', title):
+            self.text = "FOCUSNAMEFOCUS " + description
+        else:
+            self.text = title + "\n" + description
+
         self.text = title + '\n' + description
-        #self.window = self.window(5)
         self.skip = False
 
     def tokenize(self):
