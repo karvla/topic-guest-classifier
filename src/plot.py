@@ -4,9 +4,15 @@ import matplotlib.patches as mpatches
 import pickle
 import sys
 
+def print_top_names(names):
+    name_len = [(name, len(names[name])) for name in names.keys()]
+    print(sorted(name_len, key=lambda x: x[1]))
+
+
 def plot_names_histogram(names, limits=(20, 400)):
 
     n_per_name = list(map(len, names.values()))
+
     n_bins = 30
 
     plt.figure(figsize=(5,4))
@@ -47,4 +53,5 @@ if __name__ == '__main__':
     with open(sys.argv[1], 'rb') as f:
         data = pickle.load(f)
 
+    print_top_names(data)
     plot_names_histogram(data)
