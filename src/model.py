@@ -30,7 +30,7 @@ max_length = win_size*2 + 1
 batch_size = 64
 num_labels = 1
 epochs = 40
-bootstrap_set_incr = 0.05
+bootstrap_set_incr = 0.1
 using_bootstrap = False
 
 
@@ -127,9 +127,9 @@ def train(ep_train):
     # Model
     model = Sequential()
     model.add(embedding_layer)
-    model.add(Dropout(0.2))
-    model.add(Bidirectional(LSTM(128, recurrent_dropout=0.1)))
-    model.add(Dropout(0.2))
+    #model.add(Dropout(0.2))
+    model.add(Bidirectional(LSTM(16, recurrent_dropout=0.1)))
+    #model.add(Dropout(0.2))
     model.add(Dense(1, activation="sigmoid"))
     model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
     es = EarlyStopping(monitor="val_loss", mode="min", verbose=1, patience=1)
@@ -191,9 +191,5 @@ if __name__ == "__main__":
         model, accuracy, tokenizer = train(ep_train)
         model = (model, tokenizer)
 
-
-
-
-    # model = train(labeled_set, unlabeled_name)
     with open("lstm_model.pickle", "wb") as f:
         pickle.dump(model, f)
