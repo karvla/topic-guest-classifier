@@ -62,7 +62,7 @@ def make_embedding_layer(all_texts):
         embedding_dim,
         embeddings_initializer=Constant(embedding_matrix),
         input_length=max_length,
-        trainable=False,
+        trainable=True,
     )
     return embedding_layer, tokenizer
 
@@ -70,7 +70,7 @@ def make_embedding_layer(all_texts):
 def make_xy(episodes):
     split_index = int(len(episodes) * 0.8)
 
-    X = [window(ep.text, win_size) for ep in episodes]
+    X = [window(ep.description, win_size) for ep in episodes]
     y = [ep.guest for ep in episodes]
 
     X_train = X[:split_index]
@@ -127,9 +127,9 @@ def train(ep_train):
     # Model
     model = Sequential()
     model.add(embedding_layer)
-    #model.add(Dropout(0.2))
-    model.add(Bidirectional(LSTM(16, recurrent_dropout=0.1)))
-    #model.add(Dropout(0.2))
+    model.add(Dropout(0.1))
+    model.add(Bidirectional(LSTM(32, kernel_regularizer=regularizers.l2(0.01))))
+    model.add(Dropout(0.1))
     model.add(Dense(1, activation="sigmoid"))
     model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
     es = EarlyStopping(monitor="val_loss", mode="min", verbose=1, patience=1)
