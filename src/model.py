@@ -128,7 +128,7 @@ def train(ep_train):
     model = Sequential()
     model.add(embedding_layer)
     #model.add(Dropout(0.2))
-    model.add(Bidirectional(LSTM(8, recurrent_dropout=0.1)))
+    model.add(Bidirectional(LSTM(16, recurrent_dropout=0.1)))
     #model.add(Dropout(0.2))
     model.add(Dense(1, activation="sigmoid"))
     model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
