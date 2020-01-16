@@ -9,6 +9,7 @@ Tags parsed episodes with G if NAME is not on wikidata
 and with T if name belongs to a fictional character or to a dead person.
 And if there aren't to many names in the episode, excluding names only mentioned twice.
 """
+
 def plot_names_histogram(names, title=""):
     n_per_name = list(map(len, names.values()))
     plt.hist(n_per_name, bins=1000, log=True, range=(1, 1200))
@@ -48,9 +49,6 @@ def label_set(all_names, dead_names, fict_names):
             if not in_all:
                 guest_names[name] = [tokenized]
 
-    
-    plot_names_histogram(topic_names, "Names classed as topics")
-    plot_names_histogram(guest_names, "Names classed as guests")
     for episode_list in topic_names.values():
         for text in episode_list:
             print(text)

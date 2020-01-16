@@ -6,7 +6,7 @@ import sys
 from termcolor import colored
 
 """
-Builds an unlabled set from all_episodes.txt
+Used for manually label the samples.
 """
 
 nlp = spacy.load("en_core_web_sm")
@@ -37,7 +37,7 @@ def label_set():
             
             print("Is " + colored(name.title(), 'green') + "  a topic (t) or a guest (g)?")
             i = input()
-            with open("label_set.txt", "a") as f:
+            with open("data/labeled_test.txt", "a") as f:
                 if i == "t":
                     f.write(tokenized)
                     f.write("\n")

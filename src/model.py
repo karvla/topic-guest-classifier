@@ -2,7 +2,7 @@ import pickle
 import random
 import sys
 import tensorflow.keras as keras
-from keras.preprocessing.text import one_hot, Tokenizer
+from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
 from keras.layers import Activation, Dense, Dropout, Embedding, LSTM, Bidirectional
@@ -10,7 +10,6 @@ from keras.callbacks import EarlyStopping
 from keras.initializers import Constant
 from keras.utils import to_categorical
 from keras import regularizers
-from sklearn.preprocessing import LabelBinarizer
 from episode import get_labeled, get_unlabeled, window
 import logging
 import matplotlib.pyplot as plt
@@ -18,20 +17,24 @@ from validate import log_results
 import regex as re
 import numpy as np
 from datetime import datetime
+from guppy import hpy; h=hpy()
+import keras.backend as K
 
 """
-Embedding and LSTM.
+Used for training the model. The model uses bidir-LSTM and GloVe word embedding.
 """
+
 # Hyper Parameters:
-embedding_dim = 300
-vocab_size = 10000
-win_size = 30
-max_length = win_size*2 + 1
+embedding_dim = 50
+vocab_size = 5000
+win_size = 10
+max_length = win_size * 2 + 1
 batch_size = 64
 num_labels = 1
 epochs = 40
 bootstrap_set_incr = 0.1
 using_bootstrap = False
+model_name = "./models/lstm_name_dist.pickle"
 
 
 def make_embedding_layer(all_texts):
@@ -51,9 +54,9 @@ def make_embedding_layer(all_texts):
             continue
         embedding_vector = embeddings_index.get(word)
         if word == "focusnamefocus":
-            embedding_matrix[i] = np.repeat(0.1, embedding_dim)
+            embedding_matrix[i] = np.repeat(0.5, embedding_dim)
         elif word == "notfocusnot":
-            embedding_matrix[i] = np.repeat(-0.1, embedding_dim)
+            embedding_matrix[i] = np.repeat(-0.5, embedding_dim)
         elif embedding_vector is not None:
             embedding_matrix[i] = embedding_vector
 
@@ -67,11 +70,20 @@ def make_embedding_layer(all_texts):
     return embedding_layer, tokenizer
 
 
+def down_sample(a, b):
+    max_index = min((len(a), len(b))) - 1
+    return a[:max_index], b[:max_index]
+
+
 def make_xy(episodes):
+    random.shuffle(episodes)
     split_index = int(len(episodes) * 0.8)
 
     X = [window(ep.description, win_size) for ep in episodes]
+    # X = [window(ep.description, win_size) for ep in episodes]
+    # X = [ep.focus_sentence() for ep in episodes]
     y = [ep.guest for ep in episodes]
+    episodes = None
 
     X_train = X[:split_index]
     y_train = y[:split_index]
@@ -81,41 +93,43 @@ def make_xy(episodes):
     return X_train, y_train, X_val, y_val
 
 
-def get_best(ep_labeled, n):
-    ep_sorted = sorted(ep_labeled, key=lambda x: x.guest)
+def bootstrap(ep_train_path, ep_unlabeled_path):
 
-    best_T = ep_sorted[:int(n/2)]
-    best_G = ep_sorted[-int(n/2):]
-    print("Best T range :", best_T[0].guest, " ", best_T[-1].guest)
-    print("Best G range :", best_G[0].guest, " ", best_G[-1].guest)
-    others = ep_sorted[n:-n]
-    episodes = best_G + best_T
+    with open(ep_train_path) as f:
+        ep_train = np.array(get_labeled(f.read(), False))[0]
 
-    for ep in episodes:
-        ep.guest = int(ep.guest)
-
-    return episodes, others
-
-
-def bootstrap(ep_train, ep_unlabeled):
+    with open(ep_unlabeled_path) as f:
+        ep_unlabeled = np.array(get_unlabeled(f.read(), 4))
 
     def n_new():
-        return int(len(ep_train)*bootstrap_set_incr)
+        return int(len(ep_train) * bootstrap_set_incr)
 
+    phase = 0
+    model_name = "./models/semi_supervised_non_best_phase_"
     while len(ep_unlabeled) - n_new() > 0:
+        print("Phase ", phase)
+        print(h.heap())
+
         model, accuracy, tokenizer = train(ep_train)
-        ep_predicted = predict(ep_unlabeled, model, tokenizer)
-        ep_best, ep_unlabeled = get_best(ep_predicted, n_new())
-        ep_train.extend(ep_best)
+
+        print("Predicting and selecting..")
+        ep_best, ep_unlabeled = get_best(ep_unlabeled, model, tokenizer, n_new())
+        ep_train = np.concatenate((ep_train, ep_best), axis=None)
+        ep_best = None
         random.shuffle(ep_train)
-        print("Accuracy: ", accuracy)
-        print()
+        K.clear_session()
+
+        if phase % 5 == 0:
+            with open(model_name + str(phase) + ".pickle", "wb") as f:
+                pickle.dump((model, tokenizer), f)
+        phase += 1
 
     return model, tokenizer
 
 
 def train(ep_train):
     X_train, y_train, X_val, y_val = make_xy(ep_train)
+    ep_train = None
 
     embedding_layer, tokenizer = make_embedding_layer(X_val + X_train)
 
@@ -128,11 +142,11 @@ def train(ep_train):
     model = Sequential()
     model.add(embedding_layer)
     model.add(Dropout(0.1))
-    model.add(Bidirectional(LSTM(32, kernel_regularizer=regularizers.l2(0.01))))
-    model.add(Dropout(0.1))
+    model.add(Bidirectional(LSTM(128, recurrent_dropout=0.2)))
+    model.add(Dropout(0.2))
     model.add(Dense(1, activation="sigmoid"))
     model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
-    es = EarlyStopping(monitor="val_loss", mode="min", verbose=1, patience=1)
+    es = EarlyStopping(monitor="val_loss", mode="min", verbose=1, patience=3)
 
     estimator = model.fit(
         X_train,
@@ -146,7 +160,7 @@ def train(ep_train):
 
     accuracy = estimator.history["val_accuracy"][-1]
 
-    #plt.plot(estimator.history["accuracy"])
+    # plt.plot(estimator.history["accuracy"])
     plt.plot(estimator.history["val_accuracy"])
     plt.title("Model training")
     plt.ylabel("training acc")
@@ -160,17 +174,46 @@ def train(ep_train):
 
     return model, accuracy, tokenizer
 
-
-def predict(ep_unlabeled, model, tokenizer):
-    X = [ep.text for ep in ep_unlabeled]
+def get_best(episodes, model, tokenizer, n):
+    """
+    Predicts unlabeled sampels and retrus the best ones
+    """
+    X = [window(ep.description, win_size) for ep in episodes]
     X = tokenizer.texts_to_sequences(X)
     X = pad_sequences(X, maxlen=max_length)
     y_predicted = model.predict(X)
+    X = None
 
-    for ep, y in zip(ep_unlabeled, y_predicted):
-        ep.guest = y
-    ep_predicted = ep_unlabeled
-    return ep_predicted
+    for ep, y in zip(episodes, y_predicted):
+        ep.guest = float(y[0])
+
+    #episodes = np.array(sorted(episodes, key=lambda x: x.guest))
+    best = []
+    non_best = []
+    n_T = 0
+    n_G = 0
+    for ep in episodes:
+        if ep.guest > 0.95 and n_G <= n:
+            n_G += 1
+            ep.guest = 1
+            best.append(ep)
+        elif ep.guest < 0.05 and n_T <= n:
+            n_T += 1
+            ep.guest = 0
+            best.append(ep)
+        else:
+            non_best.append(ep)
+    episodes = best
+
+    #non_best = episodes[n:-n]
+    #episodes = np.concatenate((episodes[:n], episodes[-n:]), axis=None)
+    random.shuffle(episodes)
+    random.shuffle(non_best)
+    
+    #for ep in episodes:
+    #    ep.guest = round(ep.guest)
+
+    return episodes, non_best
 
 
 if __name__ == "__main__":
@@ -180,16 +223,20 @@ if __name__ == "__main__":
     else:
         comment = ""
 
-    with open(labeled_name) as f:
-        labeled_set = f.read()
+    #with open(labeled_name) as f:
+    #    ep = get_labeled(f.read())
 
-    ep_train, ep_unlabeled = get_labeled(labeled_set, True)
+    with open(labeled_name) as f:
+        ep_train = np.array(get_labeled(f.read(), True)[0])
+
+    #ep_unlabeled = np.array(ep[0] + ep[1])
+    #ep = None
 
     if using_bootstrap:
-        model = bootstrap(ep_train, ep_unlabeled)
+        model = bootstrap("./data/hand_annotated_train.txt", labeled_name)
     else:
         model, accuracy, tokenizer = train(ep_train)
         model = (model, tokenizer)
 
-    with open("lstm_model.pickle", "wb") as f:
-        pickle.dump(model, f)
+    with open(model_name, "wb") as f:
+       pickle.dump(model, f)

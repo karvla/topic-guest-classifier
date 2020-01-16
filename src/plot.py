@@ -4,22 +4,27 @@ import matplotlib.patches as mpatches
 import pickle
 import sys
 
+"""
+Plots the name mention distribution.
+"""
+
 def print_top_names(names):
     name_len = [(name, len(names[name])) for name in names.keys()]
     print(sorted(name_len, key=lambda x: x[1]))
 
 
-def plot_names_histogram(names, limits=(20, 400)):
+def plot_names_histogram(names, limits=(7, 600)):
 
     n_per_name = list(map(len, names.values()))
 
-    n_bins = 30
+    n_bins = 50
+    x_lim = 800
 
     plt.figure(figsize=(5,4))
     ax = plt.subplot(111)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    N, bins, patches = plt.hist(n_per_name, bins=n_bins, log=True, range=(0, 600), color='grey')
+    N, bins, patches = plt.hist(n_per_name, bins=n_bins, log=True, range=(0, x_lim), color='grey')
     colors = ['#EA5739','#6de581']
     hatches = ['///', '\\\\']
 
@@ -28,7 +33,7 @@ def plot_names_histogram(names, limits=(20, 400)):
         patches[i].set_edgecolor('black')
         patches[i].set_hatch(hatches[1])
 
-    for i in range(20, 30):
+    for i in range(int(limits[1]/x_lim*n_bins), n_bins):
         patches[i].set_color(colors[0])
         patches[i].set_edgecolor('black')
         patches[i].set_hatch(hatches[0])

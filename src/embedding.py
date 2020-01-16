@@ -2,6 +2,9 @@ import sys
 import pickle
 import numpy as np
 
+"""
+Creates an embeddings index and saves it.
+"""
 glove_file_path = sys.argv[1]
 
 embeddings_index = {}

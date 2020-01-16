@@ -1,11 +1,14 @@
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
+from keras.preprocessing.sequence import pad_sequences
+from keras.preprocessing.text import one_hot, Tokenizer
 import sklearn.metrics as metrics
 import pickle
 from tabulate import tabulate
-from episode import get_labeled
+from episode import get_labeled, window
 import sys
 from datetime import date
+import numpy as np
 
 
 def to_percent(n, n_total):
@@ -18,15 +21,15 @@ def log_results(y_predicted, y_true, comment=""):
     sum_pt = c[0][0] + c[0][1]
     sum_pg = c[1][0] + c[1][1]
     c = [
-        ["", "actual T", "actual G", ""],
+        ["", "predicted T", "predicted G", ""],
         [
-            "predicted T",
+            "true T",
             to_percent(c[0][0], sum_pt),
             to_percent(c[0][1], sum_pt),
             sum_pt,
         ],
         [
-            "predicted G",
+            "true G",
             to_percent(c[1][0], sum_pg),
             to_percent(c[1][1], sum_pg),
             sum_pg,
@@ -46,18 +49,18 @@ def log_results(y_predicted, y_true, comment=""):
         f.write(results)
 
 
-def validate(model, test_set, corpus, comment="Baseline"):
-    episodes = get_labeled(test_set, True)
-    corpus_test = [ep.text for ep in episodes]
+def validate(test_set):
+    win_size = 10
+    ep_test, _ = get_labeled(test_set, True)
+    X_test = [window(ep.description, win_size) for ep in ep_test]
+    y_true = [ep.guest for ep in ep_test]
 
-    vec = TfidfVectorizer()
-    vec.fit(corpus)
+    X_test = tokenizer.texts_to_sequences(X_test)
+    X_test = pad_sequences(X_test, maxlen=2*win_size+1)
 
-    X = vec.transform(corpus_test)
-    y_true = [ep.guest for ep in episodes]
-    y_predicted = model.predict(X)
+    y_predicted = model.predict(X_test)
 
-    log_results(y_predicted, y_true, comment)
+    log_results(np.rint(y_predicted), y_true, model_path)
 
 
 if __name__ == "__main__":
@@ -66,9 +69,9 @@ if __name__ == "__main__":
     test_set_path = sys.argv[2]
 
     with open(model_path, "rb") as f:
-        model, corpus = pickle.load(f)
+        model, tokenizer = pickle.load(f)
 
     with open(test_set_path, "r") as f:
         test_set = f.read()
 
-    validate(model, test_set, tuple(corpus))
+    validate(test_set)

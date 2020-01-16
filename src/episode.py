@@ -6,7 +6,7 @@ class Episode:
     def __init__(self, title, description, guest=None):
         self.title = title
         self.description = description
-        self.text = title + "\n" + description
+        #self.text = title + "\n" + description
         self.guest = guest
         self.skip = False
 
@@ -20,16 +20,24 @@ class Episode:
 
         for name in names:
             pattern = r"<>" + name + r"<\\>"
-            tok_text = re.sub(pattern, "FOCUSNAMEFOCUS", self.text)
+            tok_text = re.sub(pattern, "FOCUSNAMEFOCUS", self.description)
             tok_text = re.sub(r"<>.*?<\\>", "NOTFOCUSNOT", tok_text)
             texts.append((tok_text, name))
 
         return texts
 
+    def focus_sentence(self):
+        pattern = r"[^.!\?]* FOCUSNAMEFOCUS[^.]*\."
+        result = re.findall(pattern, self.description, re.IGNORECASE | re.MULTILINE)
+        if result:
+            return result[0]
+        else:
+            return window(self.description, 30)
+
     def names(self):
         names = []
         pattern = r"<>(.*?)<\\>"
-        for match in re.finditer(pattern, self.text):
+        for match in re.finditer(pattern, self.description):
             name = match.group(1)
             if name not in names:
                 names.append(name)
@@ -40,11 +48,14 @@ class Episode:
 def window(text, size=30):
     words = text.split(" ")
     win = ["NIL" for i in range(size * 2 + 1)]
+    focus_index = size
     for n, word in enumerate(words):
         focus_word = re.findall(r"FOCUSNAMEFOCUS", word)
         if focus_word:
             focus_index = n
             break
+
+    
     word_index = focus_index - size
 
     for i, word in enumerate(win):
@@ -54,6 +65,7 @@ def window(text, size=30):
             win[i] = words[word_index]
             word_index += 1
     return " ".join(win)
+
 
 def get_labeled(data_set, require_blance=False):
     episodes_T = []
@@ -81,6 +93,7 @@ def get_labeled(data_set, require_blance=False):
         else:
             print("Wrong label!")
 
+
     if require_blance:
         len_G = len(episodes_G)
         len_T = len(episodes_T)
@@ -95,11 +108,11 @@ def get_labeled(data_set, require_blance=False):
     return labeled_episodes, episodes_unlabeled
 
 
-def get_unlabeled(data_set):
+def get_unlabeled(data_set, size=3):
     episodes = []
     lines = data_set.splitlines()
 
-    for title, description in zip(lines[0::3], lines[1::3]):
+    for title, description in zip(lines[0::size], lines[1::size]):
         ep = Episode(title, description)
         episodes.append(ep)
 
