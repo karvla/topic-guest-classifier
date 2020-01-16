@@ -3,3 +3,7 @@ This is a project in the course Project in Computer Science (EDAN70), given at L
 
 # Abstract
 Podcasts are generally consumed by subscribing to different RSS-feeds. There could, however, be ways of generating a new podcast-feeds by picking podcast episodes from conventional feeds. This could, for example, be done by having a feed only containing episodes where a specific person is featured. A convectional search would not be sufficient to find these episodes since the name of the person could be mentioned in the metadata of the episode in the context of a Topic and not in the context of a Guest. This novel problem could be solved by using a binary classifier. In this paper, two novel solutions for the automatic annotation of training data were explored. A binary bidirectional LSTM classifier was trained on big sets of auto-annotated data and the results were compared to when the model was trained on a small set of hand-annotated data. The results show that the model trained on hand-annotated data performed better despite having vastly less training data. This indicates that quality is more important than quantity in this case. The accuracy of the model trained on hand-annotated data was 0.79.
+
+# Data
+The data set used for the project was created by Brandon Telle and can be found here:
+https://data.world/brandon-telle/podcasts-dataset
