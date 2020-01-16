@@ -4,7 +4,7 @@ import sys
 import regex as re
 
 """
-Parses names in the "What links to here"-page.
+Parses names in the "What links to here"-page. The names are printed and can be piped into a file.
 """
 
 def get_names():

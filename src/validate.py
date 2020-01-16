@@ -10,6 +10,9 @@ import sys
 from datetime import date
 import numpy as np
 
+"""
+Used to evaluate models. The results are stored in a log file.
+"""
 
 def to_percent(n, n_total):
     return str(round(n / n_total * 100, 3)) + "%"

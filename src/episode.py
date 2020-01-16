@@ -1,6 +1,9 @@
 import regex as re
 import random
 
+"""
+Class for representing and managing a sample.
+"""
 
 class Episode:
     def __init__(self, title, description, guest=None):

@@ -3,10 +3,17 @@ from nltk.tag.stanford import StanfordNERTagger
 import sys
 import regex as re
 
+"""
+Read lines from stdin and tagges all personal names like this  <>Arvid Larsson</>. The lines are
+then printed and can be fed into a new file. The names are identified using the Stanford NER Tagger.
+"""
+
+# The following files are needed.
 st = StanfordNERTagger(
     "/home/karvla/projects/topic-guest-classifier/english.all.3class.distsim.crf.ser.gz",
     "/home/karvla/projects/topic-guest-classifier/stanford-ner.jar",
 )
+
 batch_size = 1#9000
 skipped = 0
 def tag_names(text):

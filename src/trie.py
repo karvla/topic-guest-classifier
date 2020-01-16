@@ -2,6 +2,7 @@ from typing import Tuple
 
 """
 Stolen from https://gist.github.com/rcshubhadeep/fde896f05eb31c7e6d19f2c7beeeae9b#file-trie-py
+Used to store names from wikidata.
 """
 
 class TrieNode(object):

@@ -7,9 +7,9 @@ from pyPodcastParser.Podcast import Podcast
 import requests
 
 """
-Parses episodes.csv.
+Parses episodes in episodes.csv or downloads new metadata from the urls in shows.csv. The titles
+and descriptions are then printed and can be piped into a file.
 """
-
 
 def _sentences(string):
     try:
